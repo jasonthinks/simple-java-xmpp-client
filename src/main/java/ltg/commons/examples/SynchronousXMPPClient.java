@@ -16,7 +16,10 @@ public class SynchronousXMPPClient {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		SimpleXMPPClient sc = new SimpleXMPPClient("test@ltg.evl.uic.edu", "test", "test-room@conference.ltg.evl.uic.edu");
+		String username = System.getProperty("username");
+		String password = System.getProperty("password");
+		String chatRoom = System.getProperty("chatRoom");
+		SimpleXMPPClient sc = (chatRoom==null)?new SimpleXMPPClient(username, password, chatRoom):new SimpleXMPPClient(username, password);
 		
 		// We are now connected and in the group chat room. If we don't do something
 		// the main will terminate... 
