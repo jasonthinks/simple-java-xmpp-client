@@ -125,7 +125,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 		if(!createdLocally) {
 			System.out.println("chat received from [" + chat.getParticipant() + "]");
 			chat.addMessageListener(this);
-			chatsPool.put(chat.getParticipant(), chat);
+			chatsPool.put(chat.getParticipant().substring(0, chat.getParticipant().indexOf("/")), chat);
 		}
 	}
     
