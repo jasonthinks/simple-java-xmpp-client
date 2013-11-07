@@ -25,6 +25,8 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 	public static final String DOMAIN_NAME;
 	public static final String HOST;
 	public static final int PORT;
+	public static final Boolean DEBUG;
+	
 	ChatMap chatsPool = new ChatMap();
 	
     XMPPConnection connection;
@@ -46,11 +48,12 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 			DOMAIN_NAME = props.getProperty("xmpp.domain", "localhost");
 			HOST = props.getProperty("xmpp.host", "localhost");
 			PORT = Integer.parseInt(props.getProperty("xmpp.port", "5222"));
+			DEBUG = Boolean.parseBoolean(props.getProperty("xmpp.debug", "false"));
     } 
     
     public XmppClient(String username, String password, MessagePool msgPool) throws XMPPException {
     	this.username = username;
-    	XMPPConnection.DEBUG_ENABLED = true;
+    	XMPPConnection.DEBUG_ENABLED = DEBUG;
     	login(username, password);
     	this.msgPool = msgPool; 
     }
