@@ -80,11 +80,9 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         Chat chat = null;
         to = to + "@" + DOMAIN_NAME;
         if(chatsPool.containsKey(to)){
-        	System.out.println("use existing chat with " + to);
         	chat = chatsPool.get(to);
         }
         else {
-        	System.out.println("create new chat with " + to);
         	chat = connection.getChatManager().createChat(to, this);
         	chatsPool.put(to, chat);
         }
@@ -123,7 +121,6 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     @Override
 	public void chatCreated(Chat chat, boolean createdLocally) {
 		if(!createdLocally) {
-			System.out.println("chat received from [" + chat.getParticipant() + "]");
 			chat.addMessageListener(this);
 			chatsPool.put(chat.getParticipant().substring(0, chat.getParticipant().indexOf("/")), chat);
 		}
