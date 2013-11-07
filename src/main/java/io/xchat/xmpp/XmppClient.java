@@ -30,8 +30,13 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     XMPPConnection connection;
  
     MessagePool msgPool = null;
+	private final String username;
     
-    static {
+    public String getUsername() {
+		return username;
+	}
+
+	static {
     	Properties props = new Properties();
 			try {
 				props.load(new FileReader(new File("xmpp.properties")));
@@ -44,6 +49,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     } 
     
     public XmppClient(String username, String password, MessagePool msgPool) throws XMPPException {
+    	this.username = username;
     	XMPPConnection.DEBUG_ENABLED = true;
     	login(username, password);
     	this.msgPool = msgPool; 
@@ -72,6 +78,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 
     public void sendMessage(String message, String to) throws XMPPException {
         Chat chat = null;
+        to = to + "@" + DOMAIN_NAME;
         if(chatsPool.containsKey(to)){
         	System.out.println("use existing chat with " + to);
         	chat = chatsPool.get(to);
@@ -100,7 +107,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     @Override
 	public void processMessage(Chat chat, Message message) {
         if (message.getType() == Message.Type.chat) {
-        	msgPool.addMessage(chat.getParticipant(), message);
+        	msgPool.addMessage(chat, message);
 //            System.out.println(chat.getParticipant() + " says: " + message.getBody());
 //            try {
 //                chat.sendMessage(message.getBody() + " echo");
@@ -127,8 +134,8 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 		String password = System.getProperty("password");
         XmppClient c = new XmppClient(username, password, new MessagePool(){
 			@Override
-			public void addMessage(String from, Message message) {
-				System.out.println("[" + from + "] said: " + message.getBody());
+			public void addMessage(Chat from, Message message) {
+				System.out.println("[" + message.getFrom() + "] said: " + message.getBody());
 			}
         });
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -138,7 +145,6 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         System.out.println("=========================================");
         System.out.println("Who do you want to talk to? - Type contact's username:");
         String talkTo = br.readLine();
-        talkTo = talkTo + "@" + DOMAIN_NAME;
         System.out.println("-----");
         System.out.println("All messages will be sent to " + talkTo);
         System.out.println("Enter your message in the console:");
@@ -146,7 +152,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
  
         while (!(msg = br.readLine()).equals("bye")) {
         	if(msg != null && msg.startsWith("to:")) {
-        		talkTo = msg.substring(3) + "@" + DOMAIN_NAME;
+        		talkTo = msg.substring(3);
         		System.out.println("=====================================\nAll messages will be sent to " + talkTo);
         	}
         	else if(msg != null && msg.startsWith("chats")) {
@@ -169,7 +175,16 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         System.exit(0);
     }
 
-	
+    int counter = 0;
+    public void increaseCounter() {
+		this.counter++;
+	}
+	public void decreaseCounter() {
+		this.counter--;
+	}
+	public int getCounter(){
+		return this.counter;
+	}
 }
 
 class ChatMap extends HashMap<String, Chat>{
