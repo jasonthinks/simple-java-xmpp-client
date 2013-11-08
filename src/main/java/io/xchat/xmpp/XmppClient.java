@@ -43,7 +43,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 			try {
 				props.load(new FileReader(new File("xmpp.properties")));
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("Error occurred when loading file [xmpp.properties]: " + e.getMessage());
 			}
 			DOMAIN_NAME = props.getProperty("xmpp.domain", "localhost");
 			HOST = props.getProperty("xmpp.host", "localhost");
