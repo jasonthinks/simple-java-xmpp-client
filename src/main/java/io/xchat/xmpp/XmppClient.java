@@ -71,6 +71,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         		try {
 					connection.getAccountManager().createAccount(username, password);
 					logger.info("User [{}/{}] was created successfully", username, password);
+					connection.login(username, password);
 				} catch (Exception e1) {
 					logger.warn("Auto-registration is supported but exception occurred", e);
 				}
