@@ -56,21 +56,21 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     	this.msgPool = msgPool; 
     }
     
-    private void login(String userName, String password) throws XMPPException {
+    private void login(String username, String password) throws XMPPException {
         ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, DOMAIN_NAME);
         connection = new XMPPConnection(config);
         connection.connect();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
         try {
-        	logger.debug("User [{}/{}] is trying to login", userName, password);
-        	connection.login(userName, password);
+        	logger.debug("User [{}/{}] is trying to login", username, password);
+        	connection.login(username, password);
         }
         catch(Exception e) {
-        	logger.warn("User [{}/{}] login failed", e);
+        	logger.warn("User [{}/{}] login failed", username, password);
         	if(connection.getAccountManager().supportsAccountCreation()) {
         		try {
-					connection.getAccountManager().createAccount(userName, password);
-					logger.info("User [{}] was created successfully");
+					connection.getAccountManager().createAccount(username, password);
+					logger.info("User [{}/{}] was created successfully", username, password);
 				} catch (Exception e1) {
 					logger.warn("Auto-registration is supported but exception occurred", e);
 				}
