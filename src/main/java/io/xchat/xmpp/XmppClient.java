@@ -114,8 +114,9 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         if (message.getType() == Message.Type.chat) {
         	logger.debug("User [{}] received a message [{}] from user [{}]", message.getTo(), message.getBody(), message.getFrom());
         	msgPool.addMessage(chat, message);
-            if(!chatsPool.containsKey(chat.getParticipant())) {
-            	chatsPool.put(chat.getParticipant(), chat);
+        	String jid = chat.getParticipant().substring(0, chat.getParticipant().indexOf("/"));
+            if(!chatsPool.containsKey(jid)) {
+            	chatsPool.put(jid, chat);
             }
         }
     }
@@ -125,7 +126,8 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 		if(!createdLocally) {
 			logger.debug("User [{}] received a chat from user [{}]", this.getUsername(), chat.getParticipant());
 			chat.addMessageListener(this);
-			chatsPool.put(chat.getParticipant().substring(0, chat.getParticipant().indexOf("/")), chat);
+			String jid = chat.getParticipant().substring(0, chat.getParticipant().indexOf("/"));
+			chatsPool.put(jid, chat);
 		}
 	}
     
