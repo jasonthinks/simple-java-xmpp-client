@@ -19,36 +19,34 @@ import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
  
 public class XmppClient implements MessageListener, ChatManagerListener {
- 	
+ 	static Logger logger = LoggerFactory.getLogger(XmppClient.class);
 	public static final String DOMAIN_NAME;
 	public static final String HOST;
 	public static final int PORT;
 	public static final Boolean DEBUG;
-	
 	ChatMap chatsPool = new ChatMap();
-	
     XMPPConnection connection;
- 
+    int counter = 0;
     MessagePool msgPool = null;
 	private final String username;
-    
-    public String getUsername() {
-		return username;
-	}
 
 	static {
     	Properties props = new Properties();
 			try {
 				props.load(new FileReader(new File("xmpp.properties")));
 			} catch (Exception e) {
-				System.out.println("Error occurred when loading file [xmpp.properties]: " + e.getMessage());
+				logger.warn("Error occurred when loading file [xmpp.properties]: {}", e.getMessage());
 			}
 			DOMAIN_NAME = props.getProperty("xmpp.domain", "localhost");
 			HOST = props.getProperty("xmpp.host", "localhost");
 			PORT = Integer.parseInt(props.getProperty("xmpp.port", "5222"));
 			DEBUG = Boolean.parseBoolean(props.getProperty("xmpp.debug", "false"));
+			logger.debug("xmpp.domain = [{}], xmpp.host = [{}], xmpp.port = [{}], xmpp.debug = [{}]", DOMAIN_NAME,
+					HOST, PORT, DEBUG);
     } 
     
     public XmppClient(String username, String password, MessagePool msgPool) throws XMPPException {
@@ -72,8 +70,11 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         		try {
 					connection.getAccountManager().createAccount(userName, password);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					logger.warn("Auto-registration is supported but exception occurred", e);
 				}
+        	}
+        	else {
+        		logger.warn("Auto-registration is not supported: {}", e.getMessage());
         	}
         }
         connection.getChatManager().addChatListener(this);
@@ -109,18 +110,13 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 	public void processMessage(Chat chat, Message message) {
         if (message.getType() == Message.Type.chat) {
         	msgPool.addMessage(chat, message);
-//            System.out.println(chat.getParticipant() + " says: " + message.getBody());
-//            try {
-//                chat.sendMessage(message.getBody() + " echo");
-//            } catch (XMPPException ex) {
-//                Logger.getLogger(XmppClient.class.getName()).log(Level.SEVERE, null, ex);
-//            }
             if(!chatsPool.containsKey(chat.getParticipant())) {
             	
             	chatsPool.put(chat.getParticipant(), chat);
             }
         }
     }
+    
     @Override
 	public void chatCreated(Chat chat, boolean createdLocally) {
 		if(!createdLocally) {
@@ -174,8 +170,11 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         c.disconnect();
         System.exit(0);
     }
-
-    int counter = 0;
+    
+    public String getUsername() {
+		return username;
+	}
+    
     public void increaseCounter() {
 		this.counter++;
 	}
