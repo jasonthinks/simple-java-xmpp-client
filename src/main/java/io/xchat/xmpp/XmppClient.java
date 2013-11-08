@@ -62,13 +62,15 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         connection.connect();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
         try {
+        	logger.debug("User [{}/{}] is trying to login", userName, password);
         	connection.login(userName, password);
-        	
         }
         catch(Exception e) {
+        	logger.warn("User [{}/{}] login failed", e);
         	if(connection.getAccountManager().supportsAccountCreation()) {
         		try {
 					connection.getAccountManager().createAccount(userName, password);
+					logger.info("User [{}] was created successfully");
 				} catch (Exception e1) {
 					logger.warn("Auto-registration is supported but exception occurred", e);
 				}
@@ -81,6 +83,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     }
 
     public void sendMessage(String message, String to) throws XMPPException {
+    	logger.debug("User [{}] is sending message [{}] to user [{}]", this.getUsername(), message, to);
         Chat chat = null;
         to = to + "@" + DOMAIN_NAME;
         if(chatsPool.containsKey(to)){
@@ -109,9 +112,9 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     @Override
 	public void processMessage(Chat chat, Message message) {
         if (message.getType() == Message.Type.chat) {
+        	logger.debug("User [{}] received a message [{}] from user [{}]", message.getTo(), message.getBody(), message.getFrom());
         	msgPool.addMessage(chat, message);
             if(!chatsPool.containsKey(chat.getParticipant())) {
-            	
             	chatsPool.put(chat.getParticipant(), chat);
             }
         }
@@ -120,6 +123,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     @Override
 	public void chatCreated(Chat chat, boolean createdLocally) {
 		if(!createdLocally) {
+			logger.debug("User [{}] received a chat from user [{}]", this.getUsername(), chat.getParticipant());
 			chat.addMessageListener(this);
 			chatsPool.put(chat.getParticipant().substring(0, chat.getParticipant().indexOf("/")), chat);
 		}
