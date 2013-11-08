@@ -190,6 +190,13 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 	public int getCounter(){
 		return this.counter;
 	}
+	public void deleteAccount(){
+		try {
+			connection.getAccountManager().deleteAccount();
+		} catch (XMPPException e) {
+			logger.warn("Failed to delete user account [{}].", this.getUsername());
+		}
+	}
 }
 
 class ChatMap extends HashMap<String, Chat>{
