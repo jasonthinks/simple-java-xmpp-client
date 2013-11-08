@@ -127,8 +127,8 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 		if(!createdLocally) {
 			logger.debug("User [{}] received a chat from user [{}]", this.getUsername(), chat.getParticipant());
 			chat.addMessageListener(this);
-			String jid = chat.getParticipant().substring(0, chat.getParticipant().indexOf("/"));
-			chatsPool.put(jid, chat);
+//			String jid = chat.getParticipant().substring(0, chat.getParticipant().indexOf("/"));
+//			chatsPool.put(jid, chat);
 		}
 	}
     
@@ -201,6 +201,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 }
 
 class ChatMap extends HashMap<String, Chat>{
+	Logger logger = LoggerFactory.getLogger(ChatMap.class);
 	/**
 	 * 
 	 */
@@ -214,6 +215,7 @@ class ChatMap extends HashMap<String, Chat>{
 		if(key.indexOf("@") < 0) {
 			key = key + "@" + XmppClient.DOMAIN_NAME;
 		}
+		logger.debug("Chat with [{}] was added to catch", key);;
 		return super.put(key, value);
 	}
 	
