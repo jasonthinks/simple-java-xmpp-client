@@ -59,15 +59,17 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     
     private void login(String username, String password) throws XMPPException {
         ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, DOMAIN_NAME);
-//        config.setSASLAuthenticationEnabled(false);
+        config.setSASLAuthenticationEnabled(true);
+        SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 		config.setDebuggerEnabled(false);
 		config.setNotMatchingDomainCheckEnabled(false);
 		config.setSecurityMode(SecurityMode.disabled);
 		config.setReconnectionAllowed(true);
 		config.setSendPresence(false);
+		
         connection = new XMPPConnection(config);
         connection.connect();
-        SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+        
         try {
         	logger.debug("User [{}/{}] is trying to login", username, password);
         	connection.login(username, password);
