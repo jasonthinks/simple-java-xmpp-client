@@ -18,6 +18,7 @@ import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.packet.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,12 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     
     private void login(String username, String password) throws XMPPException {
         ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, DOMAIN_NAME);
+        config.setSASLAuthenticationEnabled(false);
+		config.setDebuggerEnabled(false);
+		config.setNotMatchingDomainCheckEnabled(false);
+		config.setSecurityMode(SecurityMode.disabled);
+		config.setReconnectionAllowed(true);
+		config.setSendPresence(false);
         connection = new XMPPConnection(config);
         connection.connect();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
