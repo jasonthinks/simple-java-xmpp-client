@@ -20,6 +20,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
  
@@ -58,6 +59,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     }
     
     private void login(String username, String password) throws XMPPException {
+    	Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.accept_all);
         ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, DOMAIN_NAME);
         config.setSASLAuthenticationEnabled(true);
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
@@ -71,16 +73,21 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         connection.connect();
         
         try {
-        	logger.debug("User [{}/{}] is trying to login", username, password);
+        	
         	connection.login(username, password);
+        	Presence presence = new Presence(Presence.Type.available);
+        	connection.sendPacket(presence);
+        	logger.debug("User [{}/{}] logged in and got line.", username, password);
         }
         catch(Exception e) {
         	logger.warn("User [{}/{}] login failed", username, password);
         	if(connection.getAccountManager().supportsAccountCreation()) {
         		try {
 					connection.getAccountManager().createAccount(username, password);
-					logger.info("User [{}/{}] was created successfully", username, password);
+					logger.info("User [{}/{}] created successfully", username, password);
 					connection.login(username, password);
+					Presence presence = new Presence(Presence.Type.available);
+		        	connection.sendPacket(presence);
 				} catch (Exception e1) {
 					logger.warn("Auto-registration is supported but exception occurred", e);
 				}
@@ -96,6 +103,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     	logger.debug("User [{}] is sending message [{}] to user [{}]", this.getUsername(), message, to);
         Chat chat = null;
         to = to + "@" + DOMAIN_NAME;
+        confirmInRoster(to);
         if(chatsPool.containsKey(to)){
         	chat = chatsPool.get(to);
         }
@@ -104,6 +112,23 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         	chatsPool.put(to, chat);
         }
         chat.sendMessage(message);
+    }
+    
+    private void confirmInRoster(String jid) {
+    	Roster roster = connection.getRoster();
+        Collection<RosterEntry> entries = roster.getEntries();
+        for (RosterEntry r : entries) {
+        	if(r.getUser().startsWith(jid)){
+        		return;
+        	}
+        }
+        try {
+			roster.createEntry(jid, jid, null);
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
     }
     
     public void displayBuddyList() {
@@ -224,7 +249,7 @@ class ChatMap extends HashMap<String, Chat>{
 		if(key.indexOf("@") < 0) {
 			key = key + "@" + XmppClient.DOMAIN_NAME;
 		}
-		logger.debug("Chat with [{}] was added to catch", key);;
+		logger.debug("Chat with [{}] added to chats' pool", key);
 		return super.put(key, value);
 	}
 	
