@@ -172,7 +172,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         XmppClient c = new XmppClient(username, password, new MessagePool(){
 			@Override
 			public void addMessage(Chat from, Message message) {
-				System.out.println("[" + message.getFrom() + "] said: " + message.getBody());
+				System.out.println("[" + message.getFrom().substring(0, message.getFrom().indexOf("@")) + "] said: " + message.getBody());
 			}
         });
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -198,7 +198,7 @@ public class XmppClient implements MessageListener, ChatManagerListener {
         		}
         	}
         	else if(msg != null && msg.startsWith("help")) {
-       			System.out.println("Available commands: \n\tchats\n\tbuddies\nto:somebody\n\thelp\n\tbye");
+       			System.out.println("Available commands: \n\tchats\n\tbuddies\n\tto:somebody\n\thelp\n\tbye");
         	}
         	else if(msg != null && msg.startsWith("buddies")) {
         		c.displayBuddyList();
