@@ -12,13 +12,13 @@ import java.util.Properties;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.slf4j.Logger;
@@ -51,17 +51,17 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 					HOST, PORT, DEBUG);
     } 
     
-    public XmppClient(String username, String password, MessagePool msgPool) throws XMPPException {
+    public XmppClient(String username, String password, MessagePool msgPool) throws Exception {
     	this.username = username;
     	XMPPConnection.DEBUG_ENABLED = DEBUG;
     	login(username, password);
     	this.msgPool = msgPool; 
     }
     
-    private void login(String username, String password) throws XMPPException {
+    private void login(String username, String password) throws Exception {
     	Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.accept_all);
         ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, DOMAIN_NAME);
-        config.setSASLAuthenticationEnabled(true);
+        config.setSASLAuthenticationEnabled(false);
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 		config.setDebuggerEnabled(false);
 		config.setNotMatchingDomainCheckEnabled(false);
@@ -90,10 +90,12 @@ public class XmppClient implements MessageListener, ChatManagerListener {
 		        	connection.sendPacket(presence);
 				} catch (Exception e1) {
 					logger.warn("Auto-registration is supported but exception occurred", e);
+					throw e1;
 				}
         	}
         	else {
         		logger.warn("Auto-registration is not supported: {}", e.getMessage());
+        		throw e;
         	}
         }
         connection.getChatManager().addChatListener(this);
@@ -169,12 +171,17 @@ public class XmppClient implements MessageListener, ChatManagerListener {
     public static void main(String args[]) throws XMPPException, IOException {
     	String username = System.getProperty("username");
 		String password = System.getProperty("password");
-        XmppClient c = new XmppClient(username, password, new MessagePool(){
-			@Override
-			public void addMessage(Chat from, Message message) {
-				System.out.println("[" + message.getFrom().substring(0, message.getFrom().indexOf("@")) + "] said: " + message.getBody());
-			}
-        });
+        XmppClient c = null;
+		try {
+			c = new XmppClient(username, password, new MessagePool(){
+				@Override
+				public void addMessage(Chat from, Message message) {
+					System.out.println("[" + message.getFrom().substring(0, message.getFrom().indexOf("@")) + "] said: " + message.getBody());
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String msg;
 
